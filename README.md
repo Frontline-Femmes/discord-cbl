@@ -7,7 +7,7 @@
 ## Features
 
 - 🚀 Fetch CBL history for any SteamID with lightning speed
-- 🌟 Display reputation points, risk rating, and risk ranking in a visually appealing format
+- 🌟 Display reputation points, risk rating, risk ranking, and active/expired ban counts
 - 🔒 Show both active and expired bans with detailed information
 - 🧵 Automatically create a thread for expired bans to keep your channels organized
 
