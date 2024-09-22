@@ -29,3 +29,5 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/cblbot:latest
+    - name: Push to prod
+      run: ${{ secrets.PUSH_WEBHOOK }}
