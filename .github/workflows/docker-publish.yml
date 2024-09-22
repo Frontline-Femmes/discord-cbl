@@ -33,3 +33,5 @@ jobs:
       run: ${{ secrets.TAILSCALE_SCRIPT }}
     - name: Push to prod
       run: curl -X POST ${{ secrets.PUSH_WEBHOOK }}
+    - name: Logout of Tailscale
+      run: sudo tailscale logout
