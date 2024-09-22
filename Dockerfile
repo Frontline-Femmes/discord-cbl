@@ -5,8 +5,11 @@ WORKDIR /opt/workdir
 # Test to make sure packages are up to date
 RUN apt update && apt upgrade -y
 
-# Copy the core direcory to the workdir
+# Copy the core directory to the workdir
 COPY . ./
+
+# Copy .env file
+COPY .env .env
 
 # Install dependencies
 RUN npm i --production
