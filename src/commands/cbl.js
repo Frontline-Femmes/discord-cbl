@@ -6,11 +6,8 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('cbl')
     .setDescription('Fetch CBL history for a SteamID')
-    .addStringOption(option =>
-      option
-        .setName('steamid')
-        .setDescription('The SteamID of the player')
-        .setRequired(true)
+    .addStringOption((option) =>
+      option.setName('steamid').setDescription('The SteamID of the player').setRequired(true)
     ),
   async execute(interaction) {
     const steamId = interaction.options.getString('steamid');
@@ -44,12 +41,12 @@ module.exports = {
           {
             name: 'Active Bans',
             value: `${user.activeBans.edges.length}`,
-            inline: true,
+            inline: true
           },
           {
             name: 'Expired Bans',
             value: `${user.expiredBans.edges.length}`,
-            inline: true,
+            inline: true
           }
         )
         .setTimestamp();
@@ -60,12 +57,9 @@ module.exports = {
         const bansPerPage = 3;
         for (let i = 0; i < banArray.length; i += bansPerPage) {
           const currentBans = banArray.slice(i, i + bansPerPage);
-          const embed = new EmbedBuilder()
-            .setTitle(title)
-            .setColor(0xff0000)
-            .setTimestamp();
+          const embed = new EmbedBuilder().setTitle(title).setColor(0xff0000).setTimestamp();
 
-          currentBans.forEach(ban => {
+          currentBans.forEach((ban) => {
             const banInfo = `
 **Ban ID**: ${ban.id}
 **Reason**: ${ban.reason || 'No reason provided'}
@@ -88,13 +82,13 @@ module.exports = {
       // Send active bans in a thread
       if (user.activeBans && user.activeBans.edges.length > 0) {
         const activeBanPages = createPaginatedEmbeds(
-          user.activeBans.edges.map(edge => edge.node),
+          user.activeBans.edges.map((edge) => edge.node),
           `Active Bans for ${user.name || steamId}`
         );
 
         const activeThread = await interaction.channel.threads.create({
           name: `Active Bans for ${user.name || steamId}`,
-          autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
+          autoArchiveDuration: ThreadAutoArchiveDuration.OneHour
         });
 
         for (const page of activeBanPages) {
@@ -105,13 +99,13 @@ module.exports = {
       // Send expired bans in a thread
       if (user.expiredBans && user.expiredBans.edges.length > 0) {
         const expiredBanPages = createPaginatedEmbeds(
-          user.expiredBans.edges.map(edge => edge.node),
+          user.expiredBans.edges.map((edge) => edge.node),
           `Expired Bans for ${user.name || steamId}`
         );
 
         const expiredThread = await interaction.channel.threads.create({
           name: `Expired Bans for ${user.name || steamId}`,
-          autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
+          autoArchiveDuration: ThreadAutoArchiveDuration.OneHour
         });
 
         for (const page of expiredBanPages) {
@@ -126,5 +120,5 @@ module.exports = {
         await interaction.editReply('Error fetching CBL history.');
       }
     }
-  },
+  }
 };
