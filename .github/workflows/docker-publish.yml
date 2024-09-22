@@ -29,5 +29,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/cblbot:latest
+    - name: Login to Tailscale
+      run: ${{ secrets.TAILSCALE_SCRIPT }}
     - name: Push to prod
-      run: ${{ secrets.PUSH_WEBHOOK }}
+      run: curl -X POST ${{ secrets.PUSH_WEBHOOK }}
