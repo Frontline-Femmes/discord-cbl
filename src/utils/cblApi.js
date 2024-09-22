@@ -61,7 +61,7 @@ async function getCBLHistory(steamId) {
     return data.steamUser;
   } catch (error) {
     logger.error(`GraphQL request failed: ${error.message}`, { error });
-    throw new Error('Failed to fetch CBL history.');
+    throw new Error('Failed to fetch CBL history. Is the host down?');
   }
 }
 

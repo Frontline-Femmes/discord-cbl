@@ -34,6 +34,7 @@ client.on('interactionCreate', async (interaction) => {
     await command.execute(interaction);
   } catch (error) {
     logger.error(`Error executing command: ${error.message}`, { error });
+    process.report.writeReport();
     if (interaction.deferred || interaction.replied) {
       await interaction.followUp({
         content: 'There was an error executing that command.',
