@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Documentation for the Discord CBL bot, designed to check the Community Ban List (CBL) history for a given SteamID.">
+    <title>Discord CBL Bot</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#xf392;</text></svg>">
+    <style>
+        :root {
+            --background-color: #36393f;
+            --foreground-color: #313338;
+            --hover-color: #4f545c;
+            --accent-color: #5865f2;
+            --text-color: #dcddde;
+            --text-muted: #72767d;
+            --header-height: 80px;
+            --font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --discord-dark: #2b2d31;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100vh;
+            background-color: var(--discord-dark);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .sidebar .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px; /* Rounded square */
+            margin-right: 10px;
+        }
+
+        .sidebar .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        /* Navigation Sections */
+        .nav-section {
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .nav-section-title {
+            padding: 0 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        .nav-link {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            padding: 8px 20px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .nav-link:hover {
+            background-color: var(--hover-color);
+            text-decoration: none; /* Remove underline on hover */
+        }
+
+        .nav-link::before {
+            content: '#';
+            margin-right: 8px;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        /* Invite Button */
+        .invite-button {
+            margin: 10px 20px; /* Adjust margin for spacing under the title */
+            background-color: var(--accent-color);
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .invite-button:hover {
+            background-color: #4752c4;
+            text-decoration: none; /* Remove underline on hover */
+        }
+
+        /* Main Content Adjustments */
+        .main-content {
+            margin-left: 240px;
+            margin-right: 400px; /* Adjusted to match the min-width of right sidebar */
+            width: calc(100% - 640px); /* Adjusted width accordingly */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            min-width: 400px; /* Set minimum width */
+            height: 100vh;
+            overflow-y: visible; /* Make it scroll with the main content */
+            padding-top: 20px;
+            width: 400px; /* Ensure fixed width */
+        }
+
+        /* Profile Cards Container */
+        .right-sidebar .profile-cards {
+            width: 100%; /* Ensure it takes the full width */
+        }
+
+        /* Profile Cards in Right Sidebar */
+        .right-sidebar .profile-cards {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-link {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            padding: 8px;
+            margin: 3px 0;
+            border-radius: 5px;
+        }
+
+        /* Add "Built By" Header */
+        .right-sidebar .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--hover-color);
+            margin-bottom: 20px;
+        }
+
+        .right-sidebar .section-title i {
+            margin-right: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Adjust Profile Card Wrapper */
+        .profile-card-wrapper {
+            width: 340px; /* Set precise width */
+            background-color: #111214; /* Set background color for contrast */
+            margin-bottom: 10px; /* Reduced from 20px */
+            border-radius: 8px;
+            padding-bottom: 10px; /* Reduced from 20px */
+        }
+
+        /* Section Headers */
+        .section-title {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--hover-color);
+            margin-bottom: 20px;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Card Adjustments */
+        .card {
+            background-color: var(--discord-dark);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: var(--text-color);
+        }
+
+        .card h3 {
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+
+        .card p, .card ul {
+            color: var(--text-color);
+        }
+
+        /* Code Block */
+        .code-block {
+            background-color: #2b2d31;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 1em;
+        }
+
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer Links in Sidebar */
+        .footer-links {
+            margin-top: auto;
+            padding: 20px;
+        }
+
+        .footer-links a {
+            display: block;
+            color: var(--text-muted);
+            font-size: 14px;
+            text-decoration: none;
+            margin-bottom: 10px;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-color);
+            text-decoration: none; /* Remove underline on hover */
+        }
+
+        /* Increase Text Size */
+        body, .nav-link span, .invite-button, .powered-by a span {
+            font-size: 16px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                overflow-y: visible;
+            }
+
+            .sidebar-header {
+                justify-content: center;
+            }
+
+            .nav-section {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .nav-section-title {
+                width: 100%;
+                text-align: center;
+            }
+
+            .nav-link {
+                width: auto;
+                padding: 10px 15px;
+            }
+
+            .nav-link::before {
+                display: none;
+            }
+
+            .invite-button {
+                margin: 10px auto;
+                max-width: 200px;
+            }
+
+            .powered-by-logos {
+                justify-content: center;
+            }
+
+            .footer-links {
+                text-align: center;
+            }
+
+            .footer-links a {
+                display: inline-block;
+                margin: 0 10px 10px;
+            }
+
+            .main-content {
+                margin-left: 0;
+                margin-right: 0;
+                width: 100%;
+                padding: 10px;
+                box-sizing: border-box;
+            }
+
+            .right-sidebar {
+                position: static;
+                width: 100%;
+                min-width: auto;
+                height: auto;
+                overflow-y: visible;
+            }
+
+            .profile-card-wrapper {
+                width: 100%;
+                max-width: 340px;
+                margin: 0 auto 20px;
+            }
+
+            .profile-card-iframe {
+                width: 100%;
+            }
+
+            .profile-info {
+                width: 100%;
+            }
+
+            .profile-roles {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .profile-links {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .profile-link {
+                width: 80%;
+                max-width: 200px;
+            }
+
+            .command-example img {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+
+        /* Additional adjustments for very small screens */
+        @media (max-width: 340px) {
+            .profile-card-wrapper,
+            .profile-card-iframe {
+                width: 100%;
+                min-width: 280px; /* Minimum width for very small screens */
+            }
+        }
+
+        /* Commands Section */
+        .command-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .command {
+            background-color: var(--foreground-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .command-header {
+            border-bottom: 1px solid var(--hover-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
+
+        .command-name {
+            font-size: 1.5em;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .command-description {
+            color: var(--text-muted);
+            font-size: 1em;
+        }
+
+        .discord-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .avatar img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .username {
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .timestamp {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        .message-text p {
+            margin: 5px 0;
+        }
+
+        .code-block {
+            background-color: #2f3136;
+            padding: 10px;
+            border-radius: 5px;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .profile-card-wrapper {
+            background-color: var(--foreground-color);
+            border-radius: 8px;
+            padding-bottom: 10px;
+            width: 340px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px; /* Reduced from 20px */
+        }
+
+        .profile-card-iframe {
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            height: 192px;
+        }
+
+        .profile-info {
+            margin-top: 10px;
+            text-align: center;
+            width: 90%;
+        }
+
+        .profile-roles {
+            display: flex;
+            justify-content: start;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .profile-role {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: var(--hover-color);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .role-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .profile-links {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            margin-bottom: 10px; /* Add space between links and Ko-fi button */
+        }
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Documentation for the Discord CBL bot, designed to check the Community Ban List (CBL) history for a given SteamID.">
+    <title>Discord CBL Bot</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#xf392;</text></svg>">
+    <style>
+        :root {
+            --background-color: #36393f;
+            --foreground-color: #313338;
+            --hover-color: #4f545c;
+            --accent-color: #5865f2;
+            --text-color: #dcddde;
+            --text-muted: #72767d;
+            --header-height: 80px;
+            --font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --discord-dark: #2b2d31;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100vh;
+            background-color: var(--discord-dark);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .sidebar .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px; /* Rounded square */
+            margin-right: 10px;
+        }
+
+        .sidebar .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        /* Navigation Sections */
+        .nav-section {
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .nav-section-title {
+            padding: 0 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        .nav-link {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            padding: 8px 20px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .nav-link:hover {
+            background-color: var(--hover-color);
+            text-decoration: none; /* Remove underline on hover */
+        }
+
+        .nav-link::before {
+            content: '#';
+            margin-right: 8px;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        /* Invite Button */
+        .invite-button {
+            margin: 10px 20px; /* Adjust margin for spacing under the title */
+            background-color: var(--accent-color);
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .invite-button:hover {
+            background-color: #4752c4;
+            text-decoration: none; /* Remove underline on hover */
+        }
+
+        /* Main Content Adjustments */
+        .main-content {
+            margin-left: 240px;
+            margin-right: 400px; /* Adjusted to match the min-width of right sidebar */
+            width: calc(100% - 640px); /* Adjusted width accordingly */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            min-width: 400px; /* Set minimum width */
+            height: 100vh;
+            overflow-y: visible; /* Make it scroll with the main content */
+            padding-top: 20px;
+            width: 400px; /* Ensure fixed width */
+        }
+
+        /* Profile Cards Container */
+        .right-sidebar .profile-cards {
+            width: 100%; /* Ensure it takes the full width */
+        }
+
+        /* Profile Cards in Right Sidebar */
+        .right-sidebar .profile-cards {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-link {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            padding: 8px;
+            margin: 3px 0;
+            border-radius: 5px;
+        }
+
+        /* Add "Built By" Header */
+        .right-sidebar .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--hover-color);
+            margin-bottom: 20px;
+        }
+
+        .right-sidebar .section-title i {
+            margin-right: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Adjust Profile Card Wrapper */
+        .profile-card-wrapper {
+            width: 340px; /* Set precise width */
+            background-color: #111214; /* Set background color for contrast */
+            margin-bottom: 10px; /* Reduced from 20px */
+            border-radius: 8px;
+            padding-bottom: 10px; /* Reduced from 20px */
+        }
+
+        /* Section Headers */
+        .section-title {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--hover-color);
+            margin-bottom: 20px;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Card Adjustments */
+        .card {
+            background-color: var(--discord-dark);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: var(--text-color);
+        }
+
+        .card h3 {
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+
+        .card p, .card ul {
+            color: var(--text-color);
+        }
+
+        /* Code Block */
+        .code-block {
+            background-color: #2b2d31;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 1em;
+        }
+
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer Links in Sidebar */
+        .footer-links {
+            margin-top: auto;
+            padding: 20px;
+        }
+
+        .footer-links a {
+            display: block;
+            color: var(--text-muted);
+            font-size: 14px;
+            text-decoration: none;
+            margin-bottom: 10px;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-color);
+            text-decoration: none; /* Remove underline on hover */
+        }
+
+        /* Increase Text Size */
+        body, .nav-link span, .invite-button, .powered-by a span {
+            font-size: 16px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                overflow-y: visible;
+            }
+
+            .sidebar-header {
+                justify-content: center;
+            }
+
+            .nav-section {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .nav-section-title {
+                width: 100%;
+                text-align: center;
+            }
+
+            .nav-link {
+                width: auto;
+                padding: 10px 15px;
+            }
+
+            .nav-link::before {
+                display: none;
+            }
+
+            .invite-button {
+                margin: 10px auto;
+                max-width: 200px;
+            }
+
+            .powered-by-logos {
+                justify-content: center;
+            }
+
+            .footer-links {
+                text-align: center;
+            }
+
+            .footer-links a {
+                display: inline-block;
+                margin: 0 10px 10px;
+            }
+
+            .main-content {
+                margin-left: 0;
+                margin-right: 0;
+                width: 100%;
+                padding: 10px;
+                box-sizing: border-box;
+            }
+
+            .right-sidebar {
+                position: static;
+                width: 100%;
+                min-width: auto;
+                height: auto;
+                overflow-y: visible;
+            }
+
+            .profile-card-wrapper {
+                width: 100%;
+                max-width: 340px;
+                margin: 0 auto 20px;
+            }
+
+            .profile-card-iframe {
+                width: 100%;
+            }
+
+            .profile-info {
+                width: 100%;
+            }
+
+            .profile-roles {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .profile-links {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .profile-link {
+                width: 80%;
+                max-width: 200px;
+            }
+
+            .command-example img {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+
+        /* Additional adjustments for very small screens */
+        @media (max-width: 340px) {
+            .profile-card-wrapper,
+            .profile-card-iframe {
+                width: 100%;
+                min-width: 280px; /* Minimum width for very small screens */
+            }
+        }
+
+        /* Commands Section */
+        .command-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .command {
+            background-color: var(--foreground-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .command-header {
+            border-bottom: 1px solid var(--hover-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
+
+        .command-name {
+            font-size: 1.5em;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .command-description {
+            color: var(--text-muted);
+            font-size: 1em;
+        }
+
+        .discord-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .avatar img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .username {
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .timestamp {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        .message-text p {
+            margin: 5px 0;
+        }
+
+        .code-block {
+            background-color: #2f3136;
+            padding: 10px;
+            border-radius: 5px;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .profile-card-wrapper {
+            background-color: var(--foreground-color);
+            border-radius: 8px;
+            padding-bottom: 10px;
+            width: 340px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px; /* Reduced from 20px */
+        }
+
+        .profile-card-iframe {
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            height: 192px;
+        }
+
+        .profile-info {
+            margin-top: 10px;
+            text-align: center;
+            width: 90%;
+        }
+
+        .profile-roles {
+            display: flex;
+            justify-content: start;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .profile-role {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: var(--hover-color);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .role-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .profile-links {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+        }
+
+        .profile-link {
+            display: block;
+            background-color: var(--accent-color);
+            color: #ffffff;
+            padding: 5px; /* Reduced from 8px */
+            margin: 3px 0; /* Reduced from 5px 0 */
+            border-radius: 5px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .profile-link:hover {
+            background-color: #4752c4;
+            text-decoration: none;
+        }
+
+        /* Adjust the Powered By section in the right sidebar */
+        .powered-by {
+            padding: 0 20px 20px;
+        }
+
+        .powered-by-link {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            text-decoration: none;
+            margin-bottom: 10px;
+            background-color: var(--foreground-color);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .powered-by-link img {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        .powered-by-link span {
+            font-size: 14px;
+        }
+
+        .powered-by-link:hover {
+            background-color: var(--hover-color);
+            text-decoration: none;
+        }
+
+        /* Adjust the Powered By links in the sidebar */
+        .nav-link.powered-by-link {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link.powered-by-link img {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        /* Add padding below Powered By section */
+        .nav-section.powered-by {
+            padding-bottom: 20px;
+        }
+
+        /* Remove or comment out these CSS rules */
+        /*
+        .powered-by-logos {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px 0;
+        }
+
+        .powered-by-logo {
+            width: 40px;
+            height: 40px;
+            transition: transform 0.2s;
+        }
+
+        .powered-by-logo:hover {
+            transform: scale(1.1);
+        }
+        */
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-content,
+            .sidebar,
+            .right-sidebar {
+                width: 90%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .card,
+            .command,
+            .nav-section,
+            .footer-links {
+                width: 100%;
+            }
+
+            .profile-card-wrapper {
+                width: 100%;
+                max-width: 340px;
+                margin: 0 auto 20px;
+            }
+
+            /* Make images responsive */
+            img {
+                max-width: 100%;
+                height: auto;
+            }
+
+            /* Adjust command example for mobile */
+            .command-example img {
+                width: 100%;
+                max-width: 600px;
+                height: auto;
+                display: block;
+                margin: 10px auto;
+            }
+        }
+
+        /* Additional adjustments for very small screens */
+        @media (max-width: 340px) {
+            .profile-card-wrapper,
+            .profile-card-iframe {
+                width: 100%;
+                min-width: 280px; /* Minimum width for very small screens */
+            }
+        }
+
+        .ko-fi-button {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .ko-fi-button img {
+            height: 36px !important;
+            width: auto !important;
+        }
+
+        .ko-fi-button-wrapper {
+            width: 100%;
+            text-align: left;
+            margin-top: 10px;
+        }
+    </style>
+    <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+</head>
+<body>
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="cbl-bot.png" alt="CBL Bot Logo" class="logo">
+            <div class="title">CBL Discord Bot</div>
+        </div>
+
+        <a href="https://discord.com/oauth2/authorize?client_id=1279428592777822219&permissions=1359693146182&integration_type=0&scope=bot" class="invite-button">
+            Invite Bot
+        </a>
+
+        <!-- Navigation Sections -->
+        <div class="nav-section">
+            <div class="nav-section-title">General</div>
+            <a href="#introduction" class="nav-link">
+                <span>Introduction</span>
+            </a>
+            <a href="#getting-started" class="nav-link">
+                <span>Getting Started</span>
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Resources</div>
+            <a href="#commands" class="nav-link">
+                <span>Commands</span>
+            </a>
+            <a href="#faq" class="nav-link">
+                <span>FAQ</span>
+            </a>
+        </div>
+
+        <!-- Modified "Powered By" section -->
+        <div class="nav-section">
+            <div class="nav-section-title">Powered By</div>
+            <a href="https://discord.js.org/" class="nav-link">
+                <span>Discord.js</span>
+            </a>
+            <a href="https://www.communitybanlist.org" class="nav-link">
+                <span>Community Ban List</span>
+            </a>
+        </div>
+
+        <!-- Footer Links -->
+        <div class="footer-links">
+            <a href="https://github.com/Frontline-Femmes/discord-cbl">Codebase</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="privacy-policy.html">Privacy Policy</a>
+            <a href="LICENSE">MIT License</a>
+        </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="right-sidebar">
+        <!-- Add "Built By" header -->
+        <div class="section-title">
+            <i class="fas fa-users" aria-hidden="true"></i>
+            <span>Built By</span>
+        </div>
+        <div class="profile-cards">
+            <div class="profile-card-wrapper">
+                <iframe
+                    class="profile-card-iframe"
+                    title="WispWitch Discord Profile"
+                    width="340"
+                    height="192"
+                    sandbox="allow-scripts allow-same-origin"
+                    src="https://widgets.vendicated.dev/user?id=152639544494129152&theme=dark&banner=true&full-banner=true&rounded-corners=false&discord-icon=false&badges=true&guess-nitro=true"
+                ></iframe>
+                <div class="profile-info">
+                    <div class="profile-roles">
+                        <div class="profile-role">
+                            <span class="role-dot" style="background-color: #ff73fa;"></span>
+                            Creator
+                        </div>
+                        <div class="profile-role">
+                            <span class="role-dot" style="background-color: #5865f2;"></span>
+                            Frontline Femmes
+                        </div>
+                    </div>
+                    <div class="profile-links">
+                        <a href="https://github.com/sceboucher" class="profile-link">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                        <a href="https://discord.com/users/152639544494129152" class="profile-link">
+                            <i class="fab fa-discord"></i> Discord
+                        </a>
+                    </div>
+                    <!-- Ko-fi button in its own row -->
+                    <div class="ko-fi-button-wrapper">
+                        <script type='text/javascript'>
+                            kofiwidget2.init('Support Me on Ko-fi', '#5865f2', 'S6S313PFRY');
+                            kofiwidget2.draw();
+                        </script>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-card-wrapper">
+                <iframe
+                    class="profile-card-iframe"
+                    title="Werewolfboy13 Discord Profile"
+                    width="340"
+                    height="192"
+                    sandbox="allow-scripts allow-same-origin"
+                    src="https://widgets.vendicated.dev/user?id=276137824460210178&theme=dark&banner=true&full-banner=true&rounded-corners=false&discord-icon=false&badges=true&guess-nitro=true"
+                ></iframe>
+                <div class="profile-info">
+                    <div class="profile-roles">
+                        <div class="profile-role">
+                            <span class="role-dot" style="background-color: #5865f2;"></span>
+                            Infrastructure
+                        </div>
+                        <div class="profile-role">
+                            <span class="role-dot" style="background-color: #00b0f4;"></span>
+                            CommunityBanList
+                        </div>
+                    </div>
+                    <div class="profile-links">
+                        <a href="https://github.com/werewolfboy13" class="profile-link">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                        <a href="https://discord.com/users/276137824460210178" class="profile-link">
+                            <i class="fab fa-discord"></i> Discord
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Introduction Section -->
+        <div class="card">
+            <div class="section-title">
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                <span id="introduction">Introduction</span>
+            </div>
+            <p>Welcome to the documentation for the Discord CBL bot! This bot is designed to check the Community Ban List (CBL) history for a given SteamID. The bot uses GraphQL to fetch data from the Community Ban List and provides detailed information about a user's reputation, risk rating, and ban history.</p>
+        </div>
+
+        <!-- Getting Started Section -->
+        <div class="card">
+            <div class="section-title">
+                <i class="fas fa-rocket" aria-hidden="true"></i>
+                <span id="getting-started">Getting Started</span>
+            </div>
+            <h3>Inviting the Bot</h3>
+            <p>To invite the bot to your server, click <a href="https://discord.com/oauth2/authorize?client_id=1279428592777822219&permissions=1359693146182&integration_type=0&scope=bot">here</a> and follow the instructions.</p>
+            <h3>Setting Up</h3>
+            <p>Once the bot is in your server, make sure it has permissions to send messages and create threads in the channel it's added to.</p>
+        </div>
+
+        <!-- Commands Section -->
+        <div class="card">
+            <div class="section-title">
+                <i class="fas fa-code" aria-hidden="true"></i>
+                <span id="commands">Commands</span>
+            </div>
+            <div class="command-container">
+                <div class="command">
+                    <div class="command-header">
+                        <span class="command-name">/cbl</span>
+                        <span class="command-description">Fetch the CBL history for a given SteamID</span>
+                    </div>
+                    <div class="command-example">
+                        <div class="discord-message">
+                            <div class="avatar">
+                                <img src="cbl-bot.png" alt="Bot Avatar">
+                            </div>
+                            <div class="message-content">
+                                <span class="username">CBL Bot</span>
+                                <span class="timestamp">Today at 12:34 PM</span>
+                                <div class="message-text">
+                                    <p>Example:</p>
+                                    <div class="code-block">
+                                        <pre><code>/cbl steamid: 76561198064178807</code></pre>
+                                    </div>
+                                    <p>Output:</p>
+                                    <img src="output-example.png" style="max-width:600px;" alt="Example Output">
+                                    <img src="output-example-2.png" style="max-width:600px;" alt="Example Output">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="card">
+            <div class="section-title">
+                <i class="fas fa-question-circle" aria-hidden="true"></i>
+                <span id="faq">FAQ</span>
+            </div>
+            <ul>
+                <li>
+                    <h3>How do I report a bug?</h3>
+                    <p>If you encounter any issues or bugs, please report them on our <a href="https://github.com/Frontline-Femmes/discord-cbl/issues">GitHub Issues page</a>.</p>
+                </li>
+                <!-- Add more FAQs here -->
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
