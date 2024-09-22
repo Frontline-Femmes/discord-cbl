@@ -1,14 +1,14 @@
-import { createLogger, format as _format, transports as _transports } from 'winston';
+const winston = require('winston');
 
-const logger = createLogger({
+const logger = winston.createLogger({
   level: 'debug',
-  format: _format.combine(
-    _format.timestamp(),
-    _format.printf(({ level, message, timestamp }) => {
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ level, message, timestamp }) => {
       return `[${timestamp}] [${level.toUpperCase()}]: ${message}`;
     })
   ),
-  transports: [new _transports.Console()]
+  transports: [new winston.transports.Console()]
 });
 
-export default logger;
+module.exports = logger;
