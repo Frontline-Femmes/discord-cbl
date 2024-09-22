@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, Partials, ThreadAutoArchiveDuration } = require('discord.js');
+const { Client, GatewayIntentBits, Partials, ThreadAutoArchiveDuration, EmbedBuilder } = require('discord.js');
 const { GraphQLClient, gql } = require('graphql-request');
 const winston = require('winston');
 
@@ -127,8 +127,7 @@ client.on('interactionCreate', async (interaction) => {
       // Construct the CBL user page link
       const cblLink = `https://communitybanlist.com/search/${steamId}`;
 
-
-      // Create an embed message
+      // Create the main embed message
       const embed = {
         color: 0xffc40b,
         title: `CBL History for ${user.name || steamId}`,
@@ -164,66 +163,71 @@ client.on('interactionCreate', async (interaction) => {
         timestamp: new Date(),
       };
 
-      // Prepare Active Bans
-      if (user.activeBans && user.activeBans.edges.length > 0) {
-        embed.fields.push({
-          name: `Active Bans (${user.activeBans.edges.length})`,
-          value: user.activeBans.edges
-            .map((edge) => {
-              const ban = edge.node;
-              return `**Ban ID**: ${ban.id}
+      // Function to create paginated embeds
+      function createPaginatedEmbeds(banArray, title) {
+        const pages = [];
+        const bansPerPage = 3;
+        for (let i = 0; i < banArray.length; i += bansPerPage) {
+          const currentBans = banArray.slice(i, i + bansPerPage);
+          const embed = new EmbedBuilder()
+            .setTitle(title)
+            .setColor(0xff0000)
+            .setTimestamp();
+
+          currentBans.forEach(ban => {
+            const banInfo = `
+**Ban ID**: ${ban.id}
 **Reason**: ${ban.reason || 'No reason provided'}
-**Organization**: [${ban.banList.organisation.name}](${ban.banList.organisation.discord || ''})
+**Organization**: [${ban.banList.organisation.name}](${ban.banList.organisation.discord || 'https://discord.com/'})
 **Ban List**: ${ban.banList.name}
 **Created**: ${new Date(ban.created).toLocaleDateString()}
-**Expires**: ${
-                ban.expires ? new Date(ban.expires).toLocaleDateString() : 'Never'
-              }`;
-            })
-            .join('\n\n'),
-        });
-      } else {
-        embed.fields.push({
-          name: 'Active Bans',
-          value: 'No active bans.',
-        });
+**Expires**: ${ban.expires ? new Date(ban.expires).toLocaleDateString() : 'Never'}
+            `;
+            embed.addFields({ name: '\u200B', value: banInfo });
+          });
+
+          pages.push(embed);
+        }
+        return pages;
       }
 
-      const message = await interaction.editReply({ embeds: [embed] });
-      logger.info(`Sent CBL history to ${interaction.user.tag} for SteamID: ${steamId}`);
+      // Send the main embed in the interaction reply
+      await interaction.editReply({ embeds: [embed] });
 
-      // Create a thread for expired bans
+      // Send active bans in a thread
+      if (user.activeBans && user.activeBans.edges.length > 0) {
+        const activeBanPages = createPaginatedEmbeds(user.activeBans.edges.map(edge => edge.node), `Active Bans for ${user.name || steamId}`);
+
+        const activeThread = await interaction.channel.threads.create({
+          name: `Active Bans for ${user.name || steamId}`,
+          autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
+        });
+
+        for (const page of activeBanPages) {
+          await activeThread.send({ embeds: [page] });
+        }
+      }
+
+      // Send expired bans in a thread
       if (user.expiredBans && user.expiredBans.edges.length > 0) {
-        const thread = await message.startThread({
+        const expiredBanPages = createPaginatedEmbeds(user.expiredBans.edges.map(edge => edge.node), `Expired Bans for ${user.name || steamId}`);
+
+        const expiredThread = await interaction.channel.threads.create({
           name: `Expired Bans for ${user.name || steamId}`,
           autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
         });
-        logger.debug(`Created thread for expired bans: ${thread.id}`);
 
-        // Prepare expired bans content
-        const expiredBansContent = user.expiredBans.edges
-          .map((edge) => {
-            const ban = edge.node;
-            return `**Ban ID**: ${ban.id}
-**Reason**: ${ban.reason || 'No reason provided'}
-**Organization**: [${ban.banList.organisation.name}](${ban.banList.organisation.discord || ''})
-**Ban List**: ${ban.banList.name}
-**Created**: ${new Date(ban.created).toLocaleDateString()}
-**Expired On**: ${
-              ban.expires ? new Date(ban.expires).toLocaleDateString() : 'Unknown'
-            }`;
-          })
-          .join('\n\n');
-
-        // Send the expired bans in the thread
-        await thread.send(expiredBansContent);
-        logger.info(`Posted expired bans in thread for ${interaction.user.tag}`);
+        for (const page of expiredBanPages) {
+          await expiredThread.send({ embeds: [page] });
+        }
       } else {
         logger.debug(`No expired bans to display for SteamID: ${steamId}`);
       }
     } catch (error) {
       logger.error(`Error processing /cbl command: ${error.message}`);
-      await interaction.editReply('Error fetching CBL history.');
+      if (!interaction.replied) {
+        await interaction.editReply('Error fetching CBL history.');
+      }
     }
   }
 });
