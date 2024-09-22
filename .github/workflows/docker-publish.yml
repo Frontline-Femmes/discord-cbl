@@ -48,12 +48,6 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: Set up .env file
-        run: |
-          echo DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} >> .env
-          echo DISCORD_CLIENT_ID=${{ secrets.DISCORD_CLIENT_ID }} >> .env
-          echo DISCORD_PUBLIC_KEY=${{ secrets.DISCORD_PUBLIC_KEY }} >> .env
-
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09
