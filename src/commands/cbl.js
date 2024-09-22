@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ThreadAutoArchiveDuration, EmbedBuilder } = require('discord.js');
 const { getCBLHistory } = require('../utils/cblApi');
-const logger = require('../utils/logger');
+const logger = require('../utils/logger').default;
 
 module.exports = {
   data: new SlashCommandBuilder()

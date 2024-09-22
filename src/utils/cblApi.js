@@ -1,6 +1,6 @@
 const { GraphQLClient, gql } = require('graphql-request');
 const config = require('config');
-const logger = require('./logger');
+const logger = require('./logger').default;
 
 const endpoint = config.get('graphQLEndpoint');
 const client = new GraphQLClient(endpoint);

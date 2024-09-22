@@ -4,7 +4,7 @@ const config = require('config');
 const fs = require('fs');
 const path = require('path');
 const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
-const logger = require('./utils/logger');
+const logger = require('./utils/logger').default;
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
