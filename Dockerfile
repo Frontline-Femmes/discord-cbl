@@ -9,7 +9,7 @@ RUN apt update && apt upgrade -y
 COPY . ./
 
 # Install dependencies
-RUN npm i --production
+RUN npm i --omit-dev
 
 # Install pm2
 RUN npm i pm2 -g
