@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "register": "node registerCommands.js"
+    "register": "node registerCommands.js",
+    "docker-build-server": "docker build -f ./Dockerfile . -t bot-dev",
+    "prod-test": "conc \"yarn docker-build-server\"",
+    "lint": "eslint --fix . && prettier --write \"./**/*.js\""
   },
   "dependencies": {
     "@discordjs/rest": "^1.7.1",
@@ -17,6 +20,13 @@
     "graphql-request": "^6.1.0",
     "graphql-tag": "^2.12.6",
     "winston": "^3.14.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.11.0",
+    "concurrently": "^9.0.1",
+    "eslint": "^9.11.0",
+    "globals": "^15.9.0",
+    "prettier": "^3.3.3"
   },
   "repository": {
     "type": "git",
