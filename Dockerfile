@@ -18,4 +18,4 @@ RUN npm i --production
 RUN npm i pm2 -g
 
 # Run service
-CMD [ "pm2-runtime", "index.js" ]
+CMD [ "pm2-runtime", "src/index.js" ]
