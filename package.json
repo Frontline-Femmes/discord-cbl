@@ -1,6 +1,6 @@
 {
   "name": "discord-cbl",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Discord bot for checking Community Ban List history",
   "main": "src/index.js",
   "bin": {
