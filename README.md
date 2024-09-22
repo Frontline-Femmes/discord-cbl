@@ -26,6 +26,7 @@ Fetch the CBL history for a given SteamID:
 - **steamid**: The SteamID of the player (required)
 
 Example:
+![image](https://github.com/user-attachments/assets/81355a1e-8759-4792-acd3-d926cc04504f)
 
 
 ## Developer Installation
