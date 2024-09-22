@@ -1,0 +1,31 @@
+{
+  "name": "discord-cbl",
+  "version": "1.0.0",
+  "description": "Discord bot for checking Community Ban List history",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "register": "node registerCommands.js"
+  },
+  "dependencies": {
+    "@discordjs/rest": "^1.7.1",
+    "axios": "^1.7.7",
+    "discord-api-types": "^0.37.50",
+    "discord.js": "^14.11.0",
+    "dotenv": "^16.3.1",
+    "graphql": "^16.7.1",
+    "graphql-request": "^6.1.0",
+    "graphql-tag": "^2.12.6",
+    "winston": "^3.14.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sceboucher/discord-cbl.git"
+  },
+  "author": "Samantha Boucher",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sceboucher/discord-cbl/issues"
+  },
+  "homepage": "https://github.com/sceboucher/discord-cbl#readme"
+}
