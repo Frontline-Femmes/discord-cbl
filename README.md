@@ -2,7 +2,7 @@
 
 ## Overview
 
-`discord-cbl` is a Discord bot designed to check the Community Ban List (CBL) history for a given SteamID. The bot uses GraphQL to fetch data from the Community Ban List and provides detailed information about a user's reputation, risk rating, and ban history.
+`discord-cbl` is a Discord bot designed to check the Squad Community Ban List (CBL) history for a given SteamID. The bot uses GraphQL to fetch data from the Community Ban List and provides detailed information about a user's reputation, risk rating, and ban history.
 
 ## Features
 

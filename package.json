@@ -2,23 +2,24 @@
   "name": "discord-cbl",
   "version": "1.0.0",
   "description": "Discord bot for checking Community Ban List history",
-  "main": "index.js",
+  "main": "src/index.js",
+  "bin": {
+    "discord-cbl": "./cli.js"
+  },
   "scripts": {
-    "start": "node index.js",
-    "register": "node registerCommands.js",
+    "start": "node src/index.js",
+    "register": "node src/registerCommands.js",
     "docker-build-server": "docker build -f ./Dockerfile . -t bot-dev",
     "prod-test": "conc \"yarn docker-build-server\"",
     "lint": "eslint --fix . && prettier --write \"./**/*.js\""
   },
   "dependencies": {
     "@discordjs/rest": "^1.7.1",
-    "axios": "^1.7.7",
-    "discord-api-types": "^0.37.50",
+    "config": "^3.3.12",
     "discord.js": "^14.11.0",
     "dotenv": "^16.3.1",
     "graphql": "^16.7.1",
     "graphql-request": "^6.1.0",
-    "graphql-tag": "^2.12.6",
     "winston": "^3.14.2"
   },
   "devDependencies": {
@@ -37,5 +38,11 @@
   "bugs": {
     "url": "https://github.com/sceboucher/discord-cbl/issues"
   },
-  "homepage": "https://github.com/sceboucher/discord-cbl#readme"
+  "homepage": "https://github.com/sceboucher/discord-cbl#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.11.0",
+    "eslint": "^9.11.0",
+    "eslint-define-config": "^2.1.0",
+    "globals": "^15.9.0"
+  }
 }

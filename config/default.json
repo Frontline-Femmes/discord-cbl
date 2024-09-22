@@ -1,0 +1,5 @@
+{
+  "discordToken": "${DISCORD_TOKEN}",
+  "clientId": "${DISCORD_CLIENT_ID}",
+  "graphQLEndpoint": "https://communitybanlist.com/graphql"
+}
