@@ -12,10 +12,7 @@
 - 🧵 Automatically create a thread for expired bans to keep your channels organized
 
 
-## Discord Server Installation
-
-(Link TBD)
-2. Upon adding the bot to your server, make sure the bot has permissions to send messages and create threads in the channel it's added to.
+[## Discord Server Installation](https://frontline-femmes.github.io/discord-cbl/)
 
 ## Commands
 
