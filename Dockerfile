@@ -5,8 +5,12 @@ WORKDIR /opt/workdir
 # Test to make sure packages are up to date
 RUN apt update && apt upgrade -y
 
-# Copy the core directory to the workdir
-COPY . ./
+# Copy the service across
+COPY src ./src
+COPY config ./config
+
+# Copy main package.json
+COPY package.json .
 
 # Install dependencies
 RUN npm i --omit-dev
