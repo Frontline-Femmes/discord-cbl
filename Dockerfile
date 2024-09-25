@@ -1,20 +1,11 @@
-FROM debian:bookworm-slim
+FROM node:22.6.0-slim
 
 WORKDIR /opt/workdir
 
 # Test to make sure packages are up to date
 RUN apt update && apt upgrade -y
 
-RUN apt install -y curl
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh
-RUN nvm install v22.6.0
-RUN npm install -g npm@latest
-
-# Testing tailscale setup
-# RUN apt install -y curl
-# RUN curl -fsSL https://tailscale.com/install.sh | sh
-
-# Copy the folders needed for the service
+# Copy the service across
 COPY src ./src
 COPY config ./config
 
