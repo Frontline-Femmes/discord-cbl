@@ -1,5 +1,9 @@
 name: Docker Image CI
 
+# !!! IMPORTANT !!! Do not run this on self hosted. Commands will cause havioc.
+# Needs to be on GitHub hosted runners, if you want to run on self hosted, remove the tailscale commands
+# and the push to prod command since it relies on tailscale and a webhook to push to prod.
+
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 
