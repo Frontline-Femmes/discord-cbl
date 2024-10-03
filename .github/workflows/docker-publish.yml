@@ -19,7 +19,7 @@ jobs:
 
   Build-and-Push:
 
-    runs-on: ubuntu-24.04
+    runs-on: dal-1
 
     steps:
     - name: Checkout
@@ -40,12 +40,12 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/cblbot:latest
-    - name: Login to Tailscale
-      continue-on-error: true
-      run: ${{ secrets.TAILSCALE_SCRIPT }}
+#    - name: Login to Tailscale
+#      continue-on-error: true
+#      run: ${{ secrets.TAILSCALE_SCRIPT }}
     - name: Push to prod
       continue-on-error: true
       run: curl -X POST ${{ secrets.PUSH_WEBHOOK }}
-    - name: Logout of Tailscale
-      continue-on-error: true
-      run: sudo tailscale logout
+#    - name: Logout of Tailscale
+#      continue-on-error: true
+#      run: sudo tailscale logout
