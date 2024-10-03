@@ -46,7 +46,7 @@ jobs:
     - name: Push to prod
       continue-on-error: true
 #     !!! Needs Correction !!!
-      run: curl -X -k POST ${{ secrets.PUSH_WEBHOOK }}
+      run: curl -X POST ${{ secrets.PUSH_WEBHOOK }}
 #    - name: Logout of Tailscale
 #      continue-on-error: true
 #      run: sudo tailscale logout
